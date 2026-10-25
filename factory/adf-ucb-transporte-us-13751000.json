@@ -1,0 +1,10 @@
+{
+	"name": "adf-ucb-transporte-us-13751000",
+	"properties": {
+		"trustModeClaimForMi": {
+			"value": "Disabled",
+			"editable": true
+		}
+	},
+	"location": "spaincentral"
+}
