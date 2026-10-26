@@ -1,0 +1,55 @@
+{
+	"name": "b_xls_vehiculos2022",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "sa_transporte",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "broze/xls"
+		},
+		"annotations": [],
+		"type": "Excel",
+		"typeProperties": {
+			"sheetName": "Vehiculos",
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "operacion_2022.xlsx",
+				"folderPath": "datos_xls",
+				"fileSystem": "raw"
+			},
+			"firstRowAsHeader": true
+		},
+		"schema": [
+			{
+				"name": "nro_bus",
+				"type": "String"
+			},
+			{
+				"name": "placa",
+				"type": "String"
+			},
+			{
+				"name": "tipo_bus",
+				"type": "String"
+			},
+			{
+				"name": "capacidad",
+				"type": "String"
+			},
+			{
+				"name": "fecha_desde",
+				"type": "String"
+			},
+			{
+				"name": "fecha_hasta",
+				"type": "String"
+			},
+			{
+				"name": "estado",
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

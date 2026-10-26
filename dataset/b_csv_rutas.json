@@ -6,7 +6,7 @@
 			"type": "LinkedServiceReference"
 		},
 		"folder": {
-			"name": "broze"
+			"name": "broze/csv"
 		},
 		"annotations": [],
 		"type": "DelimitedText",
@@ -52,5 +52,6 @@
 				"type": "String"
 			}
 		]
-	}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
 }

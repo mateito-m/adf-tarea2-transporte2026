@@ -6,5 +6,10 @@
 			"editable": true
 		}
 	},
-	"location": "spaincentral"
+	"location": "spaincentral",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "f75ad86a-4ab2-463e-a19e-daccdd9e9d4e",
+		"tenantId": "cc28633f-12b8-46cb-bc15-951dae239b4d"
+	}
 }
