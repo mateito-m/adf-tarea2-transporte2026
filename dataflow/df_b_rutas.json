@@ -59,9 +59,6 @@
 					"name": "union1"
 				},
 				{
-					"name": "union3"
-				},
-				{
 					"name": "union4"
 				},
 				{
@@ -82,14 +79,14 @@
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> csv",
 				"source(output(",
-				"          AnioFuente as integer,",
+				"          AnioFuente as string,",
 				"          RutaHistoricaId as string,",
 				"          CodigoRuta as string,",
 				"          NombreRuta as string,",
 				"          Origen as string,",
 				"          Destino as string,",
-				"          VigenciaDesde as date,",
-				"          VigenciaHasta as date,",
+				"          VigenciaDesde as string,",
+				"          VigenciaHasta as string,",
 				"          Estado as string",
 				"     ),",
 				"     allowSchemaDrift: true,",
@@ -154,7 +151,6 @@
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> select3",
 				"select1, sql union(byName: true)~> union1",
-				"select3 union(byName: true)~> union3",
 				"union1, select2 union(byName: true)~> union4",
 				"union4, select3 union(byName: true)~> union5",
 				"union5 sink(allowSchemaDrift: true,",

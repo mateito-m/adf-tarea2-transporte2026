@@ -56,9 +56,6 @@
 					"name": "select3"
 				},
 				{
-					"name": "select4"
-				},
-				{
 					"name": "union1"
 				}
 			],
@@ -123,7 +120,6 @@
 				"          RutaHistoricaId = cod_ruta,",
 				"          ParadaHistoricaId = nro_parada,",
 				"          Franja = franja,",
-				"          ValidacionesTarjeta = estimacion_abordajes,",
 				"          Descensos = estimacion_descensos,",
 				"          DemandaNoAtendida = demanda_no_atendida,",
 				"          Metodo = metodo",
@@ -135,7 +131,6 @@
 				"          RutaHistoricaId = cod_ruta,",
 				"          ParadaHistoricaId = nro_parada,",
 				"          Franja = franja,",
-				"          ValidacionesTarjeta = estimacion_abordajes,",
 				"          Descensos = estimacion_descensos,",
 				"          DemandaNoAtendida = demanda_no_atendida,",
 				"          Metodo = metodo",
@@ -147,26 +142,13 @@
 				"          RutaHistoricaId = cod_ruta,",
 				"          ParadaHistoricaId = nro_parada,",
 				"          Franja = franja,",
-				"          ValidacionesTarjeta = abordajes_manuales,",
 				"          Descensos = descensos_manuales,",
 				"          DemandaNoAtendida = demanda_no_atendida,",
 				"          Metodo = medicion",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> select3",
-				"sql select(mapColumn(",
-				"          FechaServicio,",
-				"          RutaHistoricaId,",
-				"          ParadaHistoricaId,",
-				"          Franja,",
-				"          ValidacionesTarjeta,",
-				"          Descensos,",
-				"          DemandaNoAtendida,",
-				"          Metodo",
-				"     ),",
-				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> select4",
-				"select3, select4, select1, select2 union(byName: true)~> union1",
+				"select3, sql, select1, select2 union(byName: true)~> union1",
 				"union1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",

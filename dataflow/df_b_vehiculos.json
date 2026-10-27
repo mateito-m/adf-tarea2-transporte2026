@@ -36,10 +36,33 @@
 					"name": "xls2023"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "dw_b_vehiculos",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "select1"
+				},
+				{
+					"name": "select2"
+				},
+				{
+					"name": "select3"
+				},
+				{
+					"name": "union1"
+				},
+				{
+					"name": "union2"
+				},
+				{
+					"name": "union3"
 				}
 			],
 			"scriptLines": [
@@ -56,13 +79,13 @@
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> csv",
 				"source(output(",
-				"          AnioFuente as integer,",
+				"          AnioFuente as string,",
 				"          VehiculoId as string,",
 				"          Placa as string,",
 				"          TipoVehiculo as string,",
-				"          CapacidadEfectiva as integer,",
-				"          VigenciaDesde as date,",
-				"          VigenciaHasta as date,",
+				"          CapacidadEfectiva as string,",
+				"          VigenciaDesde as string,",
+				"          VigenciaHasta as string,",
 				"          Estado as string",
 				"     ),",
 				"     allowSchemaDrift: true,",
@@ -94,16 +117,61 @@
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> xls2023",
 				"csv select(mapColumn(",
-				"          nro_bus,",
-				"          placa,",
-				"          tipo_bus,",
-				"          capacidad,",
-				"          fecha_desde,",
-				"          fecha_hasta,",
-				"          estado",
+				"          VehiculoId = nro_bus,",
+				"          Placa = placa,",
+				"          TipoVehiculo = tipo_bus,",
+				"          CapacidadEfectiva = capacidad,",
+				"          VigenciaDesde = fecha_desde,",
+				"          VigenciaHasta = fecha_hasta,",
+				"          Estado = estado",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> select1"
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"xls2022 select(mapColumn(",
+				"          VehiculoId = nro_bus,",
+				"          Placa = placa,",
+				"          TipoVehiculo = tipo_bus,",
+				"          CapacidadEfectiva = capacidad,",
+				"          VigenciaDesde = fecha_desde,",
+				"          VigenciaHasta = fecha_hasta,",
+				"          Estado = estado",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select2",
+				"xls2023 select(mapColumn(",
+				"          VehiculoId = nro_bus,",
+				"          Placa = placa,",
+				"          TipoVehiculo = tipo_bus,",
+				"          CapacidadEfectiva = capacidad,",
+				"          VigenciaDesde = fecha_desde,",
+				"          VigenciaHasta = fecha_hasta,",
+				"          Estado = estado",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select3",
+				"select1, sql union(byName: true)~> union1",
+				"union1, select2 union(byName: true)~> union2",
+				"union2, select3 union(byName: true)~> union3",
+				"union3 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          AnioFuente as string,",
+				"          VehiculoId as string,",
+				"          Placa as string,",
+				"          TipoVehiculo as string,",
+				"          CapacidadEfectiva as string,",
+				"          VigenciaDesde as string,",
+				"          VigenciaHasta as string,",
+				"          Estado as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
 			]
 		}
 	}
