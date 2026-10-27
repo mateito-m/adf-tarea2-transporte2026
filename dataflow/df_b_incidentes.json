@@ -1,0 +1,196 @@
+{
+	"name": "df_b_incidentes",
+	"properties": {
+		"folder": {
+			"name": "bronze"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "b_csv_incidentes",
+						"type": "DatasetReference"
+					},
+					"name": "cs"
+				},
+				{
+					"dataset": {
+						"referenceName": "b_sql_incidentes",
+						"type": "DatasetReference"
+					},
+					"name": "sql"
+				},
+				{
+					"dataset": {
+						"referenceName": "b_xls_incidentes2022",
+						"type": "DatasetReference"
+					},
+					"name": "xls2022"
+				},
+				{
+					"dataset": {
+						"referenceName": "b_xls_incidentes2023",
+						"type": "DatasetReference"
+					},
+					"name": "xls2023"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "select2"
+				},
+				{
+					"name": "select3"
+				},
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "select4"
+				},
+				{
+					"name": "derivedColumn2"
+				},
+				{
+					"name": "derivedColumn3"
+				},
+				{
+					"name": "select5"
+				},
+				{
+					"name": "union1"
+				},
+				{
+					"name": "union2"
+				},
+				{
+					"name": "union3"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          id_incidente as string,",
+				"          tipo as string,",
+				"          severidad as string,",
+				"          fecha_inicio as string,",
+				"          hora_inicio as string,",
+				"          fecha_fin as string,",
+				"          hora_fin as string,",
+				"          fecha_registro as string,",
+				"          rutas_afectadas as string,",
+				"          vehiculo_afectado as string,",
+				"          descripcion as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> cs",
+				"source(output(",
+				"          AnioFuente as string,",
+				"          IncidenteId as string,",
+				"          TipoIncidente as string,",
+				"          Severidad as string,",
+				"          FechaHoraInicio as string,",
+				"          FechaHoraFin as string,",
+				"          FechaHoraRegistro as string,",
+				"          VehiculoId as string,",
+				"          Descripcion as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> sql",
+				"source(output(",
+				"          id_incidente as string,",
+				"          tipo as string,",
+				"          severidad as string,",
+				"          fecha_inicio as string,",
+				"          hora_inicio as string,",
+				"          fecha_fin as string,",
+				"          hora_fin as string,",
+				"          fecha_registro as string,",
+				"          rutas_afectadas as string,",
+				"          vehiculo_afectado as string,",
+				"          descripcion as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> xls2022",
+				"source(output(",
+				"          id_incidente as string,",
+				"          tipo as string,",
+				"          severidad as string,",
+				"          fecha_inicio as string,",
+				"          hora_inicio as string,",
+				"          fecha_fin as string,",
+				"          hora_fin as string,",
+				"          fecha_registro as string,",
+				"          rutas_afectadas as string,",
+				"          vehiculo_afectado as string,",
+				"          descripcion as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> xls2023",
+				"derivedColumn2 select(mapColumn(",
+				"          IncidenteId = id_incidente,",
+				"          TipoIncidente = tipo,",
+				"          Severidad = severidad,",
+				"          FechaHoraInicio = fecha_inicio,",
+				"          FechaHoraFin = fecha_fin,",
+				"          FechaHoraRegistro = fecha_registro,",
+				"          VehiculoId = vehiculo_afectado,",
+				"          Descripcion = descripcion",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select2",
+				"derivedColumn3 select(mapColumn(",
+				"          IncidenteId = id_incidente,",
+				"          TipoIncidente = tipo,",
+				"          Severidad = severidad,",
+				"          FechaHoraInicio = fecha_inicio,",
+				"          FechaHoraFin = fecha_fin,",
+				"          FechaHoraRegistro = fecha_registro,",
+				"          VehiculoId = vehiculo_afectado,",
+				"          Descripcion = descripcion",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select3",
+				"cs derive(fecha_inicio = concat(fecha_inicio, ' ', hora_inicio),",
+				"          fecha_fin = concat(fecha_fin, ' ', hora_fin)) ~> derivedColumn1",
+				"derivedColumn1 select(mapColumn(",
+				"          IncidenteId = id_incidente,",
+				"          TipoIncidente = tipo,",
+				"          Severidad = severidad,",
+				"          FechaHoraInicio = fecha_inicio,",
+				"          FechaHoraFin = fecha_fin,",
+				"          FechaHoraRegistro = fecha_registro,",
+				"          VehiculoId = vehiculo_afectado,",
+				"          Descripcion = descripcion",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select4",
+				"xls2022 derive(fecha_inicio = concat(fecha_inicio, ' ', hora_inicio),",
+				"          fecha_fin = concat(fecha_fin, ' ', hora_fin)) ~> derivedColumn2",
+				"xls2023 derive(fecha_inicio = concat(fecha_inicio, ' ', hora_inicio),",
+				"          fecha_fin = concat(fecha_fin, ' ', hora_fin)) ~> derivedColumn3",
+				"sql select(mapColumn(",
+				"          IncidenteId,",
+				"          TipoIncidente,",
+				"          Severidad,",
+				"          FechaHoraInicio,",
+				"          FechaHoraFin,",
+				"          FechaHoraRegistro,",
+				"          VehiculoId,",
+				"          Descripcion",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select5",
+				"select4, select5 union(byName: true)~> union1",
+				"union1, select2 union(byName: true)~> union2",
+				"union2, select3 union(byName: true)~> union3"
+			]
+		}
+	}
+}

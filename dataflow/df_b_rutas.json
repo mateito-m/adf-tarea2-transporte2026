@@ -1,0 +1,101 @@
+{
+	"name": "df_b_rutas",
+	"properties": {
+		"folder": {
+			"name": "bronze"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "b_csv_rutas",
+						"type": "DatasetReference"
+					},
+					"name": "csv"
+				},
+				{
+					"dataset": {
+						"referenceName": "b_sql_rutas",
+						"type": "DatasetReference"
+					},
+					"name": "sql"
+				},
+				{
+					"dataset": {
+						"referenceName": "b_xls_rutas2022",
+						"type": "DatasetReference"
+					},
+					"name": "xls2022"
+				},
+				{
+					"dataset": {
+						"referenceName": "b_xls_rutas2023",
+						"type": "DatasetReference"
+					},
+					"name": "xls2023"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "union1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          cod_ruta as string,",
+				"          nombre_ruta as string,",
+				"          origen as string,",
+				"          destino as string,",
+				"          fecha_desde as string,",
+				"          fecha_hasta as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> csv",
+				"source(output(",
+				"          AnioFuente as integer,",
+				"          RutaHistoricaId as string,",
+				"          CodigoRuta as string,",
+				"          NombreRuta as string,",
+				"          Origen as string,",
+				"          Destino as string,",
+				"          VigenciaDesde as date,",
+				"          VigenciaHasta as date,",
+				"          Estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> sql",
+				"source(output(",
+				"          cod_ruta as string,",
+				"          nombre_ruta as string,",
+				"          origen as string,",
+				"          destino as string,",
+				"          fecha_desde as string,",
+				"          fecha_hasta as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> xls2022",
+				"source(output(",
+				"          cod_ruta as string,",
+				"          nombre_ruta as string,",
+				"          origen as string,",
+				"          destino as string,",
+				"          fecha_desde as string,",
+				"          fecha_hasta as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> xls2023",
+				"csv union(byName: true)~> union1"
+			]
+		}
+	}
+}
