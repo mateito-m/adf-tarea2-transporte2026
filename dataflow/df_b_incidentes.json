@@ -36,7 +36,15 @@
 					"name": "xls2023"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "dw_b_incidentes",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "select2"
@@ -55,9 +63,6 @@
 				},
 				{
 					"name": "derivedColumn3"
-				},
-				{
-					"name": "select5"
 				},
 				{
 					"name": "union1"
@@ -175,21 +180,30 @@
 				"          fecha_fin = concat(fecha_fin, ' ', hora_fin)) ~> derivedColumn2",
 				"xls2023 derive(fecha_inicio = concat(fecha_inicio, ' ', hora_inicio),",
 				"          fecha_fin = concat(fecha_fin, ' ', hora_fin)) ~> derivedColumn3",
-				"sql select(mapColumn(",
-				"          IncidenteId,",
-				"          TipoIncidente,",
-				"          Severidad,",
-				"          FechaHoraInicio,",
-				"          FechaHoraFin,",
-				"          FechaHoraRegistro,",
-				"          VehiculoId,",
-				"          Descripcion",
-				"     ),",
-				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> select5",
-				"select4, select5 union(byName: true)~> union1",
+				"select4, sql union(byName: true)~> union1",
 				"union1, select2 union(byName: true)~> union2",
-				"union2, select3 union(byName: true)~> union3"
+				"union2, select3 union(byName: true)~> union3",
+				"union3 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          AnioFuente as string,",
+				"          IncidenteId as string,",
+				"          TipoIncidente as string,",
+				"          Severidad as string,",
+				"          FechaHoraInicio as string,",
+				"          FechaHoraFin as string,",
+				"          FechaHoraRegistro as string,",
+				"          VehiculoId as string,",
+				"          Descripcion as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
 			]
 		}
 	}
