@@ -114,6 +114,18 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/s_')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/b_csv_demanda_paradas')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -1107,81 +1119,6 @@
 					"location": {
 						"type": "AzureBlobFSLocation",
 						"fileName": "operacion_2022.xlsx",
-						"folderPath": "datos_xls",
-						"fileSystem": "raw"
-					},
-					"firstRowAsHeader": true
-				},
-				"schema": [
-					{
-						"name": "id_incidente",
-						"type": "String"
-					},
-					{
-						"name": "tipo",
-						"type": "String"
-					},
-					{
-						"name": "severidad",
-						"type": "String"
-					},
-					{
-						"name": "fecha_inicio",
-						"type": "String"
-					},
-					{
-						"name": "hora_inicio",
-						"type": "String"
-					},
-					{
-						"name": "fecha_fin",
-						"type": "String"
-					},
-					{
-						"name": "hora_fin",
-						"type": "String"
-					},
-					{
-						"name": "fecha_registro",
-						"type": "String"
-					},
-					{
-						"name": "rutas_afectadas",
-						"type": "String"
-					},
-					{
-						"name": "vehiculo_afectado",
-						"type": "String"
-					},
-					{
-						"name": "descripcion",
-						"type": "String"
-					}
-				]
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/sa_transporte')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/b_xls_incidentes2023')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "sa_transporte",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "broze/xls"
-				},
-				"annotations": [],
-				"type": "Excel",
-				"typeProperties": {
-					"sheetName": "Incidentes",
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"fileName": "operacion_2023.xlsx",
 						"folderPath": "datos_xls",
 						"fileSystem": "raw"
 					},

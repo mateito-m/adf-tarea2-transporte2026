@@ -13,6 +13,79 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/b_xls_incidentes2023')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "sa_transporte",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "broze/xls"
+				},
+				"annotations": [],
+				"type": "Excel",
+				"typeProperties": {
+					"sheetName": "Incidentes",
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "operacion_2023.xlsx",
+						"folderPath": "datos_xls",
+						"fileSystem": "raw"
+					},
+					"firstRowAsHeader": true
+				},
+				"schema": [
+					{
+						"name": "id_incidente",
+						"type": "String"
+					},
+					{
+						"name": "tipo",
+						"type": "String"
+					},
+					{
+						"name": "severidad",
+						"type": "String"
+					},
+					{
+						"name": "fecha_inicio",
+						"type": "String"
+					},
+					{
+						"name": "hora_inicio",
+						"type": "String"
+					},
+					{
+						"name": "fecha_fin",
+						"type": "String"
+					},
+					{
+						"name": "hora_fin",
+						"type": "String"
+					},
+					{
+						"name": "fecha_registro",
+						"type": "String"
+					},
+					{
+						"name": "rutas_afectadas",
+						"type": "String"
+					},
+					{
+						"name": "vehiculo_afectado",
+						"type": "String"
+					},
+					{
+						"name": "descripcion",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/b_xls_paradas2022')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -929,44 +1002,43 @@
 				"type": "AzureSqlTable",
 				"schema": [
 					{
-						"name": "AnioFuente",
-						"type": "varchar"
-					},
-					{
 						"name": "DemandaId",
-						"type": "varchar"
+						"type": "nvarchar"
 					},
 					{
 						"name": "FechaServicio",
-						"type": "varchar"
+						"type": "date"
 					},
 					{
 						"name": "RutaHistoricaId",
-						"type": "varchar"
+						"type": "nvarchar"
 					},
 					{
 						"name": "ParadaHistoricaId",
-						"type": "varchar"
+						"type": "nvarchar"
 					},
 					{
 						"name": "Franja",
-						"type": "varchar"
+						"type": "nvarchar"
 					},
 					{
 						"name": "ValidacionesTarjeta",
-						"type": "varchar"
+						"type": "int",
+						"precision": 10
 					},
 					{
 						"name": "Descensos",
-						"type": "varchar"
+						"type": "int",
+						"precision": 10
 					},
 					{
 						"name": "DemandaNoAtendida",
-						"type": "varchar"
+						"type": "int",
+						"precision": 10
 					},
 					{
 						"name": "Metodo",
-						"type": "varchar"
+						"type": "nvarchar"
 					}
 				],
 				"typeProperties": {
@@ -992,20 +1064,16 @@
 				"type": "AzureSqlTable",
 				"schema": [
 					{
-						"name": "AnioFuente",
-						"type": "varchar"
-					},
-					{
 						"name": "IncidenteId",
-						"type": "varchar"
+						"type": "nvarchar"
 					},
 					{
 						"name": "RutaHistoricaId",
-						"type": "varchar"
+						"type": "nvarchar"
 					},
 					{
 						"name": "EsPrincipal",
-						"type": "varchar"
+						"type": "bit"
 					}
 				],
 				"typeProperties": {
@@ -1031,40 +1099,39 @@
 				"type": "AzureSqlTable",
 				"schema": [
 					{
-						"name": "AnioFuente",
-						"type": "varchar"
-					},
-					{
 						"name": "IncidenteId",
-						"type": "varchar"
+						"type": "nvarchar"
 					},
 					{
 						"name": "TipoIncidente",
-						"type": "varchar"
+						"type": "nvarchar"
 					},
 					{
 						"name": "Severidad",
-						"type": "varchar"
+						"type": "nvarchar"
 					},
 					{
 						"name": "FechaHoraInicio",
-						"type": "varchar"
+						"type": "datetime2",
+						"scale": 0
 					},
 					{
 						"name": "FechaHoraFin",
-						"type": "varchar"
+						"type": "datetime2",
+						"scale": 0
 					},
 					{
 						"name": "FechaHoraRegistro",
-						"type": "varchar"
+						"type": "datetime2",
+						"scale": 0
 					},
 					{
 						"name": "VehiculoId",
-						"type": "varchar"
+						"type": "nvarchar"
 					},
 					{
 						"name": "Descripcion",
-						"type": "varchar"
+						"type": "nvarchar"
 					}
 				],
 				"typeProperties": {
@@ -1090,108 +1157,49 @@
 				"type": "AzureSqlTable",
 				"schema": [
 					{
-						"name": "AnioFuente",
-						"type": "varchar"
-					},
-					{
 						"name": "ParadaHistoricaId",
-						"type": "varchar"
+						"type": "nvarchar"
 					},
 					{
 						"name": "CodigoPublicado",
-						"type": "varchar"
+						"type": "nvarchar"
 					},
 					{
 						"name": "NombreParada",
-						"type": "varchar"
+						"type": "nvarchar"
 					},
 					{
 						"name": "Zona",
-						"type": "varchar"
+						"type": "nvarchar"
 					},
 					{
 						"name": "Latitud",
-						"type": "varchar"
+						"type": "decimal",
+						"precision": 9,
+						"scale": 6
 					},
 					{
 						"name": "Longitud",
-						"type": "varchar"
+						"type": "decimal",
+						"precision": 9,
+						"scale": 6
 					},
 					{
 						"name": "VigenciaDesde",
-						"type": "varchar"
+						"type": "date"
 					},
 					{
 						"name": "VigenciaHasta",
-						"type": "varchar"
+						"type": "date"
 					},
 					{
 						"name": "Estado",
-						"type": "varchar"
+						"type": "nvarchar"
 					}
 				],
 				"typeProperties": {
 					"schema": "silver",
 					"table": "Paradas"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/s_dw_rutas_sql')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "sql_dw_transporte",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "silver"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [
-					{
-						"name": "AnioFuente",
-						"type": "varchar"
-					},
-					{
-						"name": "RutaHistoricaId",
-						"type": "varchar"
-					},
-					{
-						"name": "CodigoRuta",
-						"type": "varchar"
-					},
-					{
-						"name": "NombreRuta",
-						"type": "varchar"
-					},
-					{
-						"name": "Origen",
-						"type": "varchar"
-					},
-					{
-						"name": "Destino",
-						"type": "varchar"
-					},
-					{
-						"name": "VigenciaDesde",
-						"type": "varchar"
-					},
-					{
-						"name": "VigenciaHasta",
-						"type": "varchar"
-					},
-					{
-						"name": "Estado",
-						"type": "varchar"
-					}
-				],
-				"typeProperties": {
-					"schema": "silver",
-					"table": "Rutas"
 				}
 			},
 			"dependsOn": []
