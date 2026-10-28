@@ -12,20 +12,16 @@
 		"type": "AzureSqlTable",
 		"schema": [
 			{
-				"name": "AnioFuente",
-				"type": "varchar"
-			},
-			{
 				"name": "IncidenteId",
-				"type": "varchar"
+				"type": "nvarchar"
 			},
 			{
 				"name": "RutaHistoricaId",
-				"type": "varchar"
+				"type": "nvarchar"
 			},
 			{
 				"name": "EsPrincipal",
-				"type": "varchar"
+				"type": "bit"
 			}
 		],
 		"typeProperties": {

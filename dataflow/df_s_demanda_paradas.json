@@ -1,0 +1,98 @@
+{
+	"name": "df_s_demanda_paradas",
+	"properties": {
+		"folder": {
+			"name": "silver"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "dw_b_demanda_paradas",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "s_dw_demanda_paradas_sql",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "split1"
+				},
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          AnioFuente as string,",
+				"          DemandaId as string,",
+				"          FechaServicio as string,",
+				"          RutaHistoricaId as string,",
+				"          ParadaHistoricaId as string,",
+				"          Franja as string,",
+				"          ValidacionesTarjeta as string,",
+				"          Descensos as string,",
+				"          DemandaNoAtendida as string,",
+				"          Metodo as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> source1",
+				"source1 split(!isNull(DemandaId) && trim(toString(DemandaId)) != '',",
+				"     disjoint: false) ~> split1@(Valido, Invalido)",
+				"split1@Valido derive(DemandaId = trim(DemandaId),",
+				"          FechaServicio = iif(instr(FechaServicio, '/') > 0, toDate (FechaServicio, 'dd/MM/yyyy'), toDate (FechaServicio, 'yyyy-MM-dd')),",
+				"          RutaHistoricaId = iif(    startsWith(upper(trim(RutaHistoricaId)), 'RUTA '),    concat('RH-', substring(trim(RutaHistoricaId), 6, 20)),    iif(        isNull(RutaHistoricaId) || trim(RutaHistoricaId) == '',        toString(null()),        iif(            startsWith(trim(RutaHistoricaId), 'R-'),            concat('RH-', substring(trim(RutaHistoricaId), 3, 20)),            iif(                length(trim(RutaHistoricaId)) == 2,                concat('RH-', trim(RutaHistoricaId)),                upper(trim(RutaHistoricaId))            )        )    )),",
+				"          ParadaHistoricaId = upper(trim(ParadaHistoricaId)),",
+				"          Franja = trim(Franja),",
+				"          ValidacionesTarjeta = toInteger(ValidacionesTarjeta),",
+				"          Descensos = toInteger(Descensos),",
+				"          DemandaNoAtendida = toInteger(DemandaNoAtendida),",
+				"          Metodo = upper(trim(Metodo))) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          DemandaId as string,",
+				"          FechaServicio as date,",
+				"          RutaHistoricaId as string,",
+				"          ParadaHistoricaId as string,",
+				"          Franja as string,",
+				"          ValidacionesTarjeta as integer,",
+				"          Descensos as integer,",
+				"          DemandaNoAtendida as integer,",
+				"          Metodo as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          DemandaId,",
+				"          FechaServicio,",
+				"          RutaHistoricaId,",
+				"          ParadaHistoricaId,",
+				"          Franja,",
+				"          ValidacionesTarjeta,",
+				"          Descensos,",
+				"          DemandaNoAtendida,",
+				"          Metodo",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}
