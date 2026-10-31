@@ -121,7 +121,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "df_b_paradas",
+						"referenceName": "df_s_paradas",
 						"type": "DataFlowReference"
 					},
 					"compute": {
