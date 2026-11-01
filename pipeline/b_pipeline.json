@@ -272,7 +272,7 @@
 					"scripts": [
 						{
 							"type": "NonQuery",
-							"text": "SELECT *\nFROM bronze.Rutas\nWHERE RutaHistoricaId IS NULL\n   OR LTRIM(RTRIM(RutaHistoricaId)) = '';"
+							"text": "SET XACT_ABORT ON;\n\nBEGIN TRY\n    BEGIN TRANSACTION;\n\n    DELETE FROM bronze.IncidenteRuta;\n    DELETE FROM bronze.DemandaParadas;\n    DELETE FROM bronze.Viajes;\n    DELETE FROM bronze.Incidentes;\n    DELETE FROM bronze.Paradas;\n    DELETE FROM bronze.Vehiculos;\n    DELETE FROM bronze.Rutas;\n\n    COMMIT TRANSACTION;\nEND TRY\nBEGIN CATCH\n    IF @@TRANCOUNT > 0\n        ROLLBACK TRANSACTION;\n\n    THROW;\nEND CATCH;"
 						}
 					],
 					"scriptBlockExecutionTimeout": "02:00:00"
