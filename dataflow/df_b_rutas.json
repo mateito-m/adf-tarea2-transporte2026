@@ -118,7 +118,7 @@
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> xls2023",
 				"csv select(mapColumn(",
-				"          CodigoRuta = cod_ruta,",
+				"          RutaHistorica = cod_ruta,",
 				"          NombreRuta = nombre_ruta,",
 				"          Origen = origen,",
 				"          Destino = destino,",
