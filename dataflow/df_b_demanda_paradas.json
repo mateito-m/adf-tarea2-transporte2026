@@ -134,7 +134,8 @@
 				"          Franja = franja,",
 				"          Descensos = estimacion_descensos,",
 				"          DemandaNoAtendida = demanda_no_atendida,",
-				"          Metodo = metodo",
+				"          Metodo = metodo,",
+				"          ValidacionesTarjeta = estimacion_abordajes",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> select2",
@@ -143,7 +144,7 @@
 				"          RutaHistorica = cod_ruta,",
 				"          ParadaHistorica = nro_parada,",
 				"          Franja = franja,",
-				"          ValidacionesTarjetas = abordajes_manuales,",
+				"          ValidacionesTarjeta = abordajes_manuales,",
 				"          Descensos = descensos_manuales,",
 				"          DemandaNoAtendida = demanda_no_atendida,",
 				"          Metodo = medicion",
@@ -172,7 +173,19 @@
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          AnioFuente,",
+				"          DemandaId,",
+				"          FechaServicio,",
+				"          RutaHistoricaId,",
+				"          ParadaHistoricaId,",
+				"          Franja,",
+				"          ValidacionesTarjeta,",
+				"          Descensos,",
+				"          DemandaNoAtendida,",
+				"          Metodo",
+				"     )) ~> sink1"
 			]
 		}
 	}

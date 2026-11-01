@@ -198,7 +198,20 @@
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          AnioFuente,",
+				"          ViajeId,",
+				"          RutaHistoricaId,",
+				"          VehiculoId,",
+				"          FechaServicio,",
+				"          HoraProgramada,",
+				"          HoraSalida,",
+				"          HoraLlegada,",
+				"          ValidacionesTarjeta,",
+				"          KmRecorridos,",
+				"          EstadoViaje",
+				"     )) ~> sink1"
 			]
 		}
 	}
