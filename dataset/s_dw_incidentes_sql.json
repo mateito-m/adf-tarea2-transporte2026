@@ -51,5 +51,6 @@
 			"schema": "silver",
 			"table": "Incidentes"
 		}
-	}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
 }

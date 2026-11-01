@@ -48,5 +48,6 @@
 			"schema": "bronze",
 			"table": "Vehiculos"
 		}
-	}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
 }

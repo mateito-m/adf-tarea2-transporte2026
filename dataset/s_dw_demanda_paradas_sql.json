@@ -55,5 +55,6 @@
 			"schema": "silver",
 			"table": "DemandaParadas"
 		}
-	}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
 }

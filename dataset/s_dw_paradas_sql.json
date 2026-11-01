@@ -56,5 +56,6 @@
 			"schema": "silver",
 			"table": "Paradas"
 		}
-	}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
 }

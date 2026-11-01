@@ -62,5 +62,6 @@
 			"schema": "silver",
 			"table": "Viajes"
 		}
-	}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
 }

@@ -53,5 +53,6 @@
 			"schema": "dbo",
 			"table": "RutasAzure"
 		}
-	}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
 }

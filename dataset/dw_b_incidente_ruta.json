@@ -32,5 +32,6 @@
 			"schema": "bronze",
 			"table": "IncidenteRuta"
 		}
-	}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
 }

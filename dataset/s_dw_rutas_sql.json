@@ -48,5 +48,6 @@
 			"schema": "silver",
 			"table": "Rutas"
 		}
-	}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
 }

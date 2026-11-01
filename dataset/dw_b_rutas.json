@@ -52,5 +52,6 @@
 			"schema": "bronze",
 			"table": "Rutas"
 		}
-	}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
 }

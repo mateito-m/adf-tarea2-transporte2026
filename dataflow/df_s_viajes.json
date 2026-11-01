@@ -54,7 +54,7 @@
 				"          HoraProgramada = toTimestamp(concat(toString(FechaServicio), ' ', substring(toString(HoraProgramada), 12, 8)), 'yyyy-MM-dd HH:mm:ss'),",
 				"          HoraSalida = toTimestamp(concat(toString(FechaServicio), ' ', substring(toString(HoraSalida), 12, 8)), 'yyyy-MM-dd HH:mm:ss'),",
 				"          HoraLlegada = toTimestamp(concat(toString(FechaServicio), ' ', substring(toString(HoraLlegada), 12, 8)), 'yyyy-MM-dd HH:mm:ss'),",
-				"          ValidacionesTarjeta =  toInteger(ValidacionesTarjeta),",
+				"          ValidacionesTarjeta = toInteger(ValidacionesTarjeta),",
 				"          KmRecorridos = toDecimal(toString(KmRecorridos), 8, 1),",
 				"          EstadoViaje = upper(trim(EstadoViaje))) ~> derivedColumn1",
 				"derivedColumn1 sink(allowSchemaDrift: true,",

@@ -121,7 +121,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "df_s_paradas",
+						"referenceName": "df_b_paradas",
 						"type": "DataFlowReference"
 					},
 					"compute": {
@@ -217,6 +217,8 @@
 				}
 			}
 		],
-		"annotations": []
-	}
+		"annotations": [],
+		"lastPublishTime": "2026-10-28T12:05:54Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
 }

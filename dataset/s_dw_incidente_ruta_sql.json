@@ -28,5 +28,6 @@
 			"schema": "silver",
 			"table": "IncidenteRuta"
 		}
-	}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
 }
