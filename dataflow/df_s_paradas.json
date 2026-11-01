@@ -27,6 +27,15 @@
 			"transformations": [
 				{
 					"name": "derivedColumn1"
+				},
+				{
+					"name": "derivedColumn2"
+				},
+				{
+					"name": "filter1"
+				},
+				{
+					"name": "aggregate1"
 				}
 			],
 			"scriptLines": [
@@ -46,16 +55,29 @@
 				"     validateSchema: false,",
 				"     isolationLevel: 'READ_UNCOMMITTED',",
 				"     format: 'table') ~> source1",
-				"source1 derive(ParadaHistoricaId = upper(trim(ParadaHistoricaId)),",
-				"          CodigoPublicado = upper(trim(CodigoPublicado)),",
+				"derivedColumn2 derive(ParadaHistoricaId = toString(trim(ParadaHistoricaId)),",
+				"          CodigoPublicado = iif(     isNull(CodigoPublicado) || trim(CodigoPublicado) == '',     '',     upper(trim(CodigoPublicado)) ),",
 				"          NombreParada = trim(NombreParada),",
 				"          Zona = trim(Zona),",
 				"          Latitud = toDecimal(toString(Latitud), 9, 6),",
 				"          Longitud = toDecimal(toString(Longitud), 9, 6),",
-				"          VigenciaDesde = iif(instr(VigenciaDesde, '/') > 0, toDate (VigenciaDesde, 'dd/MM/yyyy'), toDate (VigenciaDesde, 'yyyy-MM-dd')),",
-				"          VigenciaHasta = iif(instr(VigenciaDesde, '/') > 0, toDate (VigenciaHasta, 'dd/MM/yyyy'), toDate (VigenciaHasta, 'yyyy-MM-dd')),",
+				"          VigenciaDesde = iif(    isNull(VigenciaDesde),    toDate(null()),    iif(        instr(VigenciaDesde, '/') > 0,        toDate(VigenciaDesde, 'dd/MM/yyyy'),        iif(            length(VigenciaDesde) == 5,            addDays(toDate('1899-12-30', 'yyyy-MM-dd'), toInteger(VigenciaDesde)),            toDate(VigenciaDesde, 'yyyy-MM-dd')        )    )),",
+				"          VigenciaHasta = iif(     isNull(VigenciaHasta),     toDate(null()),     iif(         instr(VigenciaHasta, '/') > 0,         toDate(VigenciaHasta, 'dd/MM/yyyy'),         iif(             length(VigenciaHasta) == 5,             addDays(toDate('1899-12-30', 'yyyy-MM-dd'), toInteger(VigenciaHasta)),             toDate(VigenciaHasta, 'yyyy-MM-dd')         )     ) ),",
 				"          Estado = upper(trim(Estado))) ~> derivedColumn1",
-				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"source1 derive(CodigoPublicado = iif(     isNull(CodigoPublicado),     '',     CodigoPublicado )) ~> derivedColumn2",
+				"derivedColumn1 filter(!isNull(CodigoPublicado)",
+				"&& trim(CodigoPublicado) != '') ~> filter1",
+				"filter1 aggregate(groupBy(ParadaHistoricaId,",
+				"          CodigoPublicado,",
+				"          NombreParada,",
+				"          Zona,",
+				"          Latitud,",
+				"          Longitud,",
+				"          VigenciaDesde,",
+				"          VigenciaHasta,",
+				"          Estado),",
+				"     Contador = count()) ~> aggregate1",
+				"aggregate1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          ParadaHistoricaId as string,",

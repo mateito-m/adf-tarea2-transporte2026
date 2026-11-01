@@ -27,6 +27,15 @@
 			"transformations": [
 				{
 					"name": "derivedColumn1"
+				},
+				{
+					"name": "derivedColumn2"
+				},
+				{
+					"name": "derivedColumn3"
+				},
+				{
+					"name": "filter1"
 				}
 			],
 			"scriptLines": [
@@ -50,14 +59,21 @@
 				"source1 derive(ViajeId = upper(trim(ViajeId)),",
 				"          RutaHistoricaId = upper(trim(RutaHistoricaId)),",
 				"          VehiculoId = upper(trim(VehiculoId)),",
-				"          FechaServicio = toDate(FechaServicio, 'yyyy-MM-dd'),",
-				"          HoraProgramada = toTimestamp(concat(toString(FechaServicio), ' ', substring(toString(HoraProgramada), 12, 8)), 'yyyy-MM-dd HH:mm:ss'),",
-				"          HoraSalida = toTimestamp(concat(toString(FechaServicio), ' ', substring(toString(HoraSalida), 12, 8)), 'yyyy-MM-dd HH:mm:ss'),",
-				"          HoraLlegada = toTimestamp(concat(toString(FechaServicio), ' ', substring(toString(HoraLlegada), 12, 8)), 'yyyy-MM-dd HH:mm:ss'),",
+				"          FechaServicio = iif(     isNull(FechaServicio),     toDate(null()),     iif(         instr(FechaServicio, '/') > 0,         toDate(FechaServicio, 'dd/MM/yyyy'),         iif(             length(FechaServicio) == 5,             addDays(toDate('1899-12-30', 'yyyy-MM-dd'), toInteger(FechaServicio)),             toDate(FechaServicio, 'yyyy-MM-dd')         )     ) ),",
+				"          HoraProgramada = iif(     isNull(HoraProgramada) || trim(toString(HoraProgramada)) == '',     toTimestamp(null()),     iif(         instr(trim(toString(HoraProgramada)), 'T') > 0,         toTimestamp(             replace(                 replace(trim(toString(HoraProgramada)), 'T', ' '),                 'Z',                 ''             ),             'yyyy-MM-dd HH:mm:ss.SSS'         ),         iif(             instr(trim(toString(HoraProgramada)), '1900-01-01') > 0,             toTimestamp(trim(toString(HoraProgramada)), 'yyyy-MM-dd HH:mm:ss'),             toTimestamp(                 concat('1900-01-01 ', trim(toString(HoraProgramada)), ':00'),                 'yyyy-MM-dd HH:mm:ss'             )         )     ) ),",
+				"          HoraSalida = iif(     isNull(HoraSalida) || trim(toString(HoraSalida)) == '',     toTimestamp(null()),     iif(         instr(trim(toString(HoraSalida)), 'T') > 0,         toTimestamp(             replace(                 replace(trim(toString(HoraSalida)), 'T', ' '),                 'Z',                 ''             ),             'yyyy-MM-dd HH:mm:ss.SSS'         ),         iif(             instr(trim(toString(HoraSalida)), '1900-01-01') > 0,             toTimestamp(trim(toString(HoraSalida)), 'yyyy-MM-dd HH:mm:ss'),             toTimestamp(                 concat('1900-01-01 ', trim(toString(HoraSalida)), ':00'),                 'yyyy-MM-dd HH:mm:ss'             )         )     ) ),",
+				"          HoraLlegada = iif(     isNull(HoraLlegada) || trim(toString(HoraLlegada)) == '',     toTimestamp(null()),     iif(         instr(trim(toString(HoraLlegada)), 'T') > 0,         toTimestamp(             replace(                 replace(trim(toString(HoraLlegada)), 'T', ' '),                 'Z',                 ''             ),             'yyyy-MM-dd HH:mm:ss.SSS'         ),         iif(             instr(trim(toString(HoraLlegada)), '1900-01-01') > 0,             toTimestamp(trim(toString(HoraLlegada)), 'yyyy-MM-dd HH:mm:ss'),             toTimestamp(                 concat('1900-01-01 ', trim(toString(HoraLlegada)), ':00'),                 'yyyy-MM-dd HH:mm:ss'             )         )     ) ),",
 				"          ValidacionesTarjeta = toInteger(ValidacionesTarjeta),",
 				"          KmRecorridos = toDecimal(toString(KmRecorridos), 8, 1),",
 				"          EstadoViaje = upper(trim(EstadoViaje))) ~> derivedColumn1",
-				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"derivedColumn1 derive(KmRecorridos = iif(     isNull(KmRecorridos) || trim(toString(KmRecorridos)) == '',     toDecimal(0),     toDecimal(KmRecorridos) ),",
+				"          ViajeId = iif(     isNull(ViajeId) || trim(ViajeId) == '',     toString(null()),     concat(         trim(ViajeId),         '-',         toString(year(FechaServicio))     ) ),",
+				"          VehiculoId = iif(    isNull(VehiculoId),    toString(null()),    iif(        iif(            left(toString(VehiculoId), 2) == 'V-',            toString(VehiculoId),            concat('V-', toString(VehiculoId))        ) == 'V-043' && year(FechaServicio) >= 2024,        'V-043-1',        iif(            left(toString(VehiculoId), 2) == 'V-',            toString(VehiculoId),            concat('V-', toString(VehiculoId))        )    ))) ~> derivedColumn2",
+				"derivedColumn2 derive(RutaHistoricaId = iif(     isNull(RutaHistoricaId) || trim(RutaHistoricaId) == '',     toString(null()),     iif(         startsWith(upper(trim(RutaHistoricaId)), 'RUTA '),         iif(             length(trim(substring(trim(RutaHistoricaId), 6, 20))) == 1,             concat('RH-0', trim(substring(trim(RutaHistoricaId), 6, 20))),             concat('RH-', trim(substring(trim(RutaHistoricaId), 6, 20)))         ),         iif(             startsWith(upper(trim(RutaHistoricaId)), 'R-'),             concat('RH-', substring(trim(RutaHistoricaId), 3, 20)),             iif(                 startsWith(upper(trim(RutaHistoricaId)), 'RH-'),                 upper(trim(RutaHistoricaId)),                 iif(                     length(trim(RutaHistoricaId)) == 2,                     concat('RH-', trim(RutaHistoricaId)),                     upper(trim(RutaHistoricaId))                 )             )         )     ) )) ~> derivedColumn3",
+				"derivedColumn3 filter(!isNull(ViajeId)",
+				"&& trim(ViajeId) != ''",
+				"&& !startsWith(ViajeId, 'TOTAL_')) ~> filter1",
+				"filter1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          ViajeId as string,",

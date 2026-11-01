@@ -44,13 +44,13 @@
 				"type": "ExecuteDataFlow",
 				"dependsOn": [
 					{
-						"activity": "Data flow3",
+						"activity": "Data flow5",
 						"dependencyConditions": [
 							"Succeeded"
 						]
 					},
 					{
-						"activity": "Data flow5",
+						"activity": "Data flow3",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -110,7 +110,14 @@
 			{
 				"name": "Data flow4",
 				"type": "ExecuteDataFlow",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "limpiar_silver",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -121,7 +128,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "df_b_paradas",
+						"referenceName": "df_s_paradas",
 						"type": "DataFlowReference"
 					},
 					"compute": {
@@ -134,7 +141,14 @@
 			{
 				"name": "Data flow5",
 				"type": "ExecuteDataFlow",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "limpiar_silver",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -158,7 +172,14 @@
 			{
 				"name": "Data flow6",
 				"type": "ExecuteDataFlow",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "limpiar_silver",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -215,10 +236,67 @@
 					},
 					"traceLevel": "Fine"
 				}
+			},
+			{
+				"name": "crear_silver",
+				"type": "Script",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "sql_dw_transporte",
+					"type": "LinkedServiceReference"
+				},
+				"typeProperties": {
+					"scripts": [
+						{
+							"type": "NonQuery",
+							"text": "/*\n  VERSION 2 - CAPA SILVER\n  Compatible con Azure Data Factory - Actividad Script.\n\n  - Crea el esquema silver si no existe.\n  - Crea las siete tablas solamente si no existen.\n  - Conserva claves primarias y foraneas.\n  - Crea los indices si no existen.\n  - No inserta datos.\n  - No elimina ni modifica tablas existentes.\n*/\n\nSET NOCOUNT ON;\n\n-- =============================================\n-- 1. VALIDAR BASE DE DATOS\n-- =============================================\n\nIF DB_NAME() <> N'dw_transporte'\nBEGIN\n    THROW 51100,\n    'Conectese a la base de datos dw_transporte antes de ejecutar este script.',\n    1;\nEND;\n\n-- =============================================\n-- 2. CREAR ESQUEMA SILVER\n-- =============================================\n\nIF SCHEMA_ID(N'silver') IS NULL\nBEGIN\n    EXEC(N'CREATE SCHEMA silver');\nEND;\n\n-- =============================================\n-- 3. TABLA RUTAS\n-- =============================================\n\nIF OBJECT_ID(N'silver.Rutas', N'U') IS NULL\nBEGIN\n    CREATE TABLE silver.Rutas (\n        RutaHistoricaId    NVARCHAR(30)  NOT NULL,\n        CodigoRuta         NVARCHAR(20)  NOT NULL,\n        NombreRuta         NVARCHAR(120) NOT NULL,\n        Origen             NVARCHAR(80)  NOT NULL,\n        Destino            NVARCHAR(80)  NOT NULL,\n        VigenciaDesde      DATE          NOT NULL,\n        VigenciaHasta      DATE          NOT NULL,\n        Estado             NVARCHAR(20)  NOT NULL,\n        CONSTRAINT PK_silver_Rutas\n            PRIMARY KEY (RutaHistoricaId)\n    );\nEND;\n\n-- =============================================\n-- 4. TABLA PARADAS\n-- =============================================\n\nIF OBJECT_ID(N'silver.Paradas', N'U') IS NULL\nBEGIN\n    CREATE TABLE silver.Paradas (\n        ParadaHistoricaId  NVARCHAR(30)  NOT NULL,\n        CodigoPublicado    NVARCHAR(20)  NOT NULL,\n        NombreParada       NVARCHAR(120) NOT NULL,\n        Zona               NVARCHAR(40)  NOT NULL,\n        Latitud            DECIMAL(9,6)  NOT NULL,\n        Longitud           DECIMAL(9,6)  NOT NULL,\n        VigenciaDesde      DATE          NOT NULL,\n        VigenciaHasta      DATE          NOT NULL,\n        Estado             NVARCHAR(20)  NOT NULL,\n        CONSTRAINT PK_silver_Paradas\n            PRIMARY KEY (ParadaHistoricaId)\n    );\nEND;\n\n-- =============================================\n-- 5. TABLA VEHICULOS\n-- =============================================\n\nIF OBJECT_ID(N'silver.Vehiculos', N'U') IS NULL\nBEGIN\n    CREATE TABLE silver.Vehiculos (\n        VehiculoId          NVARCHAR(20) NOT NULL,\n        Placa               NVARCHAR(20) NOT NULL,\n        TipoVehiculo        NVARCHAR(30) NOT NULL,\n        CapacidadEfectiva   INT          NOT NULL,\n        VigenciaDesde       DATE         NOT NULL,\n        VigenciaHasta       DATE         NOT NULL,\n        Estado              NVARCHAR(20) NOT NULL,\n        CONSTRAINT PK_silver_Vehiculos\n            PRIMARY KEY (VehiculoId)\n    );\nEND;\n\n-- =============================================\n-- 6. TABLA VIAJES\n-- =============================================\n\nIF OBJECT_ID(N'silver.Viajes', N'U') IS NULL\nBEGIN\n    CREATE TABLE silver.Viajes (\n        ViajeId               NVARCHAR(30)  NOT NULL,\n        RutaHistoricaId       NVARCHAR(30)  NOT NULL,\n        VehiculoId            NVARCHAR(20)  NOT NULL,\n        FechaServicio         DATE          NOT NULL,\n        HoraProgramada        TIME          NOT NULL,\n        HoraSalida            TIME          NOT NULL,\n        HoraLlegada           TIME          NOT NULL,\n        ValidacionesTarjeta   INT           NOT NULL,\n        KmRecorridos          DECIMAL(8,1)  NOT NULL,\n        EstadoViaje           NVARCHAR(20)  NOT NULL,\n        CONSTRAINT PK_silver_Viajes\n            PRIMARY KEY (ViajeId),\n        CONSTRAINT FK_silver_Viajes_Rutas\n            FOREIGN KEY (RutaHistoricaId)\n            REFERENCES silver.Rutas (RutaHistoricaId),\n        CONSTRAINT FK_silver_Viajes_Vehiculos\n            FOREIGN KEY (VehiculoId)\n            REFERENCES silver.Vehiculos (VehiculoId)\n    );\nEND;\n\n-- =============================================\n-- 7. TABLA DEMANDAPARADAS\n-- =============================================\n\nIF OBJECT_ID(N'silver.DemandaParadas', N'U') IS NULL\nBEGIN\n    CREATE TABLE silver.DemandaParadas (\n        DemandaId              NVARCHAR(30)  NOT NULL,\n        FechaServicio          DATE          NOT NULL,\n        RutaHistoricaId        NVARCHAR(30)  NOT NULL,\n        ParadaHistoricaId      NVARCHAR(30)  NOT NULL,\n        Franja                 NVARCHAR(20)  NOT NULL,\n        ValidacionesTarjeta    INT           NOT NULL,\n        Descensos              INT           NOT NULL,\n        DemandaNoAtendida      INT           NOT NULL,\n        Metodo                 NVARCHAR(30)  NOT NULL,\n        CONSTRAINT PK_silver_DemandaParadas\n            PRIMARY KEY (DemandaId),\n        CONSTRAINT FK_silver_DemandaParadas_Rutas\n            FOREIGN KEY (RutaHistoricaId)\n            REFERENCES silver.Rutas (RutaHistoricaId),\n        CONSTRAINT FK_silver_DemandaParadas_Paradas\n            FOREIGN KEY (ParadaHistoricaId)\n            REFERENCES silver.Paradas (ParadaHistoricaId)\n    );\nEND;\n\n-- =============================================\n-- 8. TABLA INCIDENTES\n-- =============================================\n\nIF OBJECT_ID(N'silver.Incidentes', N'U') IS NULL\nBEGIN\n    CREATE TABLE silver.Incidentes (\n        IncidenteId         NVARCHAR(30)   NOT NULL,\n        TipoIncidente       NVARCHAR(30)   NOT NULL,\n        Severidad           NVARCHAR(15)   NOT NULL,\n        FechaHoraInicio     DATETIME2(0)   NOT NULL,\n        FechaHoraFin        DATETIME2(0)   NOT NULL,\n        FechaHoraRegistro   DATETIME2(0)   NOT NULL,\n        VehiculoId          NVARCHAR(20)   NULL,\n        Descripcion         NVARCHAR(200)  NOT NULL,\n        CONSTRAINT PK_silver_Incidentes\n            PRIMARY KEY (IncidenteId),\n        CONSTRAINT FK_silver_Incidentes_Vehiculos\n            FOREIGN KEY (VehiculoId)\n            REFERENCES silver.Vehiculos (VehiculoId)\n    );\nEND;\n\n-- =============================================\n-- 9. TABLA INCIDENTE RUTA\n-- =============================================\n\nIF OBJECT_ID(N'silver.IncidenteRuta', N'U') IS NULL\nBEGIN\n    CREATE TABLE silver.IncidenteRuta (\n        IncidenteId       NVARCHAR(30)  NOT NULL,\n        RutaHistoricaId   NVARCHAR(30)  NOT NULL,\n        EsPrincipal       BIT           NOT NULL,\n        CONSTRAINT PK_silver_IncidenteRuta\n            PRIMARY KEY (IncidenteId, RutaHistoricaId),\n        CONSTRAINT FK_silver_IncidenteRuta_Incidentes\n            FOREIGN KEY (IncidenteId)\n            REFERENCES silver.Incidentes (IncidenteId),\n        CONSTRAINT FK_silver_IncidenteRuta_Rutas\n            FOREIGN KEY (RutaHistoricaId)\n            REFERENCES silver.Rutas (RutaHistoricaId)\n    );\nEND;\n\n-- =============================================\n-- 10. INDICE VIAJES\n-- =============================================\n\nIF OBJECT_ID(N'silver.Viajes', N'U') IS NOT NULL\nAND NOT EXISTS (\n    SELECT 1\n    FROM sys.indexes\n    WHERE name = N'IX_silver_Viajes_FechaRuta'\n      AND object_id = OBJECT_ID(N'silver.Viajes')\n)\nBEGIN\n    CREATE INDEX IX_silver_Viajes_FechaRuta\n        ON silver.Viajes (FechaServicio, RutaHistoricaId);\nEND;\n\n-- =============================================\n-- 11. INDICE DEMANDAPARADAS\n-- =============================================\n\nIF OBJECT_ID(N'silver.DemandaParadas', N'U') IS NOT NULL\nAND NOT EXISTS (\n    SELECT 1\n    FROM sys.indexes\n    WHERE name = N'IX_silver_DemandaParadas_FechaFranja'\n      AND object_id = OBJECT_ID(N'silver.DemandaParadas')\n)\nBEGIN\n    CREATE INDEX IX_silver_DemandaParadas_FechaFranja\n        ON silver.DemandaParadas (FechaServicio, Franja);\nEND;\n\n-- =============================================\n-- 12. VALIDAR CREACION\n-- =============================================\n\nIF (\n    SELECT COUNT(*)\n    FROM sys.tables t\n    INNER JOIN sys.schemas s\n        ON t.schema_id = s.schema_id\n    WHERE s.name = N'silver'\n      AND t.name IN (\n          N'Rutas',\n          N'Paradas',\n          N'Vehiculos',\n          N'Viajes',\n          N'DemandaParadas',\n          N'Incidentes',\n          N'IncidenteRuta'\n      )\n) <> 7\nBEGIN\n    THROW 51108,\n    'No se pudieron verificar las siete tablas de Silver.',\n    1;\nEND;\n\nSELECT\n    N'Silver inicializado correctamente' AS Resultado,\n    COUNT(*) AS TotalTablas\nFROM sys.tables t\nINNER JOIN sys.schemas s\n    ON t.schema_id = s.schema_id\nWHERE s.name = N'silver';"
+						}
+					],
+					"scriptBlockExecutionTimeout": "02:00:00"
+				}
+			},
+			{
+				"name": "limpiar_silver",
+				"type": "Script",
+				"dependsOn": [
+					{
+						"activity": "crear_silver",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "sql_dw_transporte",
+					"type": "LinkedServiceReference"
+				},
+				"typeProperties": {
+					"scripts": [
+						{
+							"type": "NonQuery",
+							"text": "SET XACT_ABORT ON;\n\nBEGIN TRY\n    BEGIN TRANSACTION;\n\n    -- Primero eliminar tablas dependientes\n    IF OBJECT_ID(N'silver.IncidenteRuta', N'U') IS NOT NULL\n        DELETE FROM silver.IncidenteRuta;\n\n    IF OBJECT_ID(N'silver.DemandaParadas', N'U') IS NOT NULL\n        DELETE FROM silver.DemandaParadas;\n\n    IF OBJECT_ID(N'silver.Viajes', N'U') IS NOT NULL\n        DELETE FROM silver.Viajes;\n\n    IF OBJECT_ID(N'silver.Incidentes', N'U') IS NOT NULL\n        DELETE FROM silver.Incidentes;\n\n    -- Después eliminar las tablas principales\n    IF OBJECT_ID(N'silver.Rutas', N'U') IS NOT NULL\n        DELETE FROM silver.Rutas;\n\n    IF OBJECT_ID(N'silver.Paradas', N'U') IS NOT NULL\n        DELETE FROM silver.Paradas;\n\n    IF OBJECT_ID(N'silver.Vehiculos', N'U') IS NOT NULL\n        DELETE FROM silver.Vehiculos;\n\n    COMMIT TRANSACTION;\n\nEND TRY\nBEGIN CATCH\n\n    IF @@TRANCOUNT > 0\n        ROLLBACK TRANSACTION;\n\n    THROW;\n\nEND CATCH;"
+						}
+					],
+					"scriptBlockExecutionTimeout": "02:00:00"
+				}
 			}
 		],
-		"annotations": [],
-		"lastPublishTime": "2026-10-28T12:05:54Z"
-	},
-	"type": "Microsoft.DataFactory/factories/pipelines"
+		"annotations": []
+	}
 }

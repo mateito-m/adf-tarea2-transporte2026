@@ -5,7 +5,14 @@
 			{
 				"name": "Data flow1",
 				"type": "ExecuteDataFlow",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "crear_bronze",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -211,10 +218,34 @@
 					},
 					"traceLevel": "Fine"
 				}
+			},
+			{
+				"name": "crear_bronze",
+				"type": "Script",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "sql_dw_transporte",
+					"type": "LinkedServiceReference"
+				},
+				"typeProperties": {
+					"scripts": [
+						{
+							"type": "NonQuery",
+							"text": "/*\n  VERSION 2 - CAPA BRONZE\n  Compatible con Azure Data Factory - Actividad Script.\n\n  - Crea el esquema bronze si no existe.\n  - Crea las tablas solamente si no existen.\n  - No elimina ni modifica tablas existentes.\n  - Todos los campos de negocio son VARCHAR.\n  - No incluye claves foraneas ni validaciones de negocio.\n*/\n\nSET NOCOUNT ON;\n\n-- =============================================\n-- 1. VALIDAR BASE DE DATOS\n-- =============================================\n\nIF DB_NAME() <> N'dw_transporte'\nBEGIN\n    THROW 51000,\n    'Conectese a la base de datos dw_transporte antes de ejecutar este script.',\n    1;\nEND;\n\n-- =============================================\n-- 2. CREAR ESQUEMA BRONZE\n-- =============================================\n\nIF SCHEMA_ID(N'bronze') IS NULL\nBEGIN\n    EXEC(N'CREATE SCHEMA bronze');\nEND;\n\n-- =============================================\n-- 3. TABLA RUTAS\n-- =============================================\n\nIF OBJECT_ID(N'bronze.Rutas', N'U') IS NULL\nBEGIN\n    CREATE TABLE bronze.Rutas (\n        AnioFuente         VARCHAR(10)  NULL,\n        RutaHistoricaId    VARCHAR(30)  NULL,\n        CodigoRuta         VARCHAR(20)  NULL,\n        NombreRuta         VARCHAR(120) NULL,\n        Origen             VARCHAR(80)  NULL,\n        Destino            VARCHAR(80)  NULL,\n        VigenciaDesde      VARCHAR(30)  NULL,\n        VigenciaHasta      VARCHAR(30)  NULL,\n        Estado             VARCHAR(20)  NULL\n    );\nEND;\n\n-- =============================================\n-- 4. TABLA PARADAS\n-- =============================================\n\nIF OBJECT_ID(N'bronze.Paradas', N'U') IS NULL\nBEGIN\n    CREATE TABLE bronze.Paradas (\n        AnioFuente         VARCHAR(10)  NULL,\n        ParadaHistoricaId  VARCHAR(30)  NULL,\n        CodigoPublicado    VARCHAR(20)  NULL,\n        NombreParada       VARCHAR(120) NULL,\n        Zona               VARCHAR(40)  NULL,\n        Latitud            VARCHAR(30)  NULL,\n        Longitud           VARCHAR(30)  NULL,\n        VigenciaDesde      VARCHAR(30)  NULL,\n        VigenciaHasta      VARCHAR(30)  NULL,\n        Estado             VARCHAR(20)  NULL\n    );\nEND;\n\n-- =============================================\n-- 5. TABLA VEHICULOS\n-- =============================================\n\nIF OBJECT_ID(N'bronze.Vehiculos', N'U') IS NULL\nBEGIN\n    CREATE TABLE bronze.Vehiculos (\n        AnioFuente          VARCHAR(10) NULL,\n        VehiculoId          VARCHAR(20) NULL,\n        Placa               VARCHAR(20) NULL,\n        TipoVehiculo        VARCHAR(30) NULL,\n        CapacidadEfectiva   VARCHAR(20) NULL,\n        VigenciaDesde       VARCHAR(30) NULL,\n        VigenciaHasta       VARCHAR(30) NULL,\n        Estado              VARCHAR(20) NULL\n    );\nEND;\n\n-- =============================================\n-- 6. TABLA VIAJES\n-- =============================================\n\nIF OBJECT_ID(N'bronze.Viajes', N'U') IS NULL\nBEGIN\n    CREATE TABLE bronze.Viajes (\n        AnioFuente            VARCHAR(10) NULL,\n        ViajeId               VARCHAR(30) NULL,\n        RutaHistoricaId       VARCHAR(30) NULL,\n        VehiculoId            VARCHAR(20) NULL,\n        FechaServicio         VARCHAR(30) NULL,\n        HoraProgramada        VARCHAR(30) NULL,\n        HoraSalida            VARCHAR(30) NULL,\n        HoraLlegada           VARCHAR(30) NULL,\n        ValidacionesTarjeta   VARCHAR(20) NULL,\n        KmRecorridos          VARCHAR(30) NULL,\n        EstadoViaje           VARCHAR(20) NULL\n    );\nEND;\n\n-- =============================================\n-- 7. TABLA DEMANDAPARADAS\n-- =============================================\n\nIF OBJECT_ID(N'bronze.DemandaParadas', N'U') IS NULL\nBEGIN\n    CREATE TABLE bronze.DemandaParadas (\n        AnioFuente             VARCHAR(10) NULL,\n        DemandaId              VARCHAR(30) NULL,\n        FechaServicio          VARCHAR(30) NULL,\n        RutaHistoricaId        VARCHAR(30) NULL,\n        ParadaHistoricaId      VARCHAR(30) NULL,\n        Franja                 VARCHAR(20) NULL,\n        ValidacionesTarjeta    VARCHAR(20) NULL,\n        Descensos              VARCHAR(20) NULL,\n        DemandaNoAtendida      VARCHAR(20) NULL,\n        Metodo                 VARCHAR(30) NULL\n    );\nEND;\n\n-- =============================================\n-- 8. TABLA INCIDENTES\n-- =============================================\n\nIF OBJECT_ID(N'bronze.Incidentes', N'U') IS NULL\nBEGIN\n    CREATE TABLE bronze.Incidentes (\n        AnioFuente          VARCHAR(10)  NULL,\n        IncidenteId         VARCHAR(30)  NULL,\n        TipoIncidente       VARCHAR(30)  NULL,\n        Severidad           VARCHAR(15)  NULL,\n        FechaHoraInicio     VARCHAR(35)  NULL,\n        FechaHoraFin        VARCHAR(35)  NULL,\n        FechaHoraRegistro   VARCHAR(35)  NULL,\n        VehiculoId          VARCHAR(20)  NULL,\n        Descripcion         VARCHAR(200) NULL\n    );\nEND;\n\n-- =============================================\n-- 9. TABLA INCIDENTE RUTA\n-- =============================================\n\nIF OBJECT_ID(N'bronze.IncidenteRuta', N'U') IS NULL\nBEGIN\n    CREATE TABLE bronze.IncidenteRuta (\n        AnioFuente        VARCHAR(10) NULL,\n        IncidenteId       VARCHAR(30) NULL,\n        RutaHistoricaId   VARCHAR(30) NULL,\n        EsPrincipal       VARCHAR(10) NULL\n    );\nEND;\n\n-- =============================================\n-- 10. VALIDAR CREACION\n-- =============================================\n\nIF (\n    SELECT COUNT(*)\n    FROM sys.tables t\n    INNER JOIN sys.schemas s\n        ON t.schema_id = s.schema_id\n    WHERE s.name = N'bronze'\n      AND t.name IN (\n          N'Rutas',\n          N'Paradas',\n          N'Vehiculos',\n          N'Viajes',\n          N'DemandaParadas',\n          N'Incidentes',\n          N'IncidenteRuta'\n      )\n) <> 7\nBEGIN\n    THROW 51008,\n    'No se pudieron verificar las siete tablas de Bronze.',\n    1;\nEND;\n\nSELECT\n    N'Bronze inicializado correctamente' AS Resultado,\n    COUNT(*) AS TotalTablas\nFROM sys.tables t\nINNER JOIN sys.schemas s\n    ON t.schema_id = s.schema_id\nWHERE s.name = N'bronze';"
+						}
+					],
+					"scriptBlockExecutionTimeout": "02:00:00"
+				}
 			}
 		],
-		"annotations": [],
-		"lastPublishTime": "2026-10-27T16:53:33Z"
-	},
-	"type": "Microsoft.DataFactory/factories/pipelines"
+		"annotations": []
+	}
 }

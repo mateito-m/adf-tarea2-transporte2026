@@ -27,6 +27,15 @@
 			"transformations": [
 				{
 					"name": "derivedColumn1"
+				},
+				{
+					"name": "derivedColumn2"
+				},
+				{
+					"name": "aggregate1"
+				},
+				{
+					"name": "aggregate2"
 				}
 			],
 			"scriptLines": [
@@ -45,15 +54,33 @@
 				"     validateSchema: false,",
 				"     isolationLevel: 'READ_UNCOMMITTED',",
 				"     format: 'table') ~> source1",
-				"source1 derive(RutaHistoricaId = trim(RutaHistoricaId),",
+				"derivedColumn2 derive(RutaHistoricaId = iif(    isNull(RutaHistoricaId) || trim(RutaHistoricaId) == '',    toString(null()),    iif(        startsWith(upper(trim(RutaHistoricaId)), 'RUTA '),        iif(            length(trim(substring(trim(RutaHistoricaId), 6, 20))) == 1,            concat('RH-0', trim(substring(trim(RutaHistoricaId), 6, 20))),            concat('RH-', trim(substring(trim(RutaHistoricaId), 6, 20)))        ),        iif(            startsWith(upper(trim(RutaHistoricaId)), 'R-'),            concat('RH-', substring(trim(RutaHistoricaId), 3, 20)),            iif(                startsWith(upper(trim(RutaHistoricaId)), 'RH-'),                upper(trim(RutaHistoricaId)),                iif(                    length(trim(RutaHistoricaId)) == 2,                    concat('RH-', trim(RutaHistoricaId)),                    upper(trim(RutaHistoricaId))                )            )        )    )),",
 				"          CodigoRuta = upper(trim(CodigoRuta)),",
 				"          NombreRuta = trim(NombreRuta),",
 				"          Origen = trim(Origen),",
 				"          Destino = trim(Destino),",
-				"          VigenciaDesde = iif(instr(VigenciaDesde, '/') > 0, toDate (VigenciaDesde, 'dd/MM/yyyy'), toDate (VigenciaDesde, 'yyyy-MM-dd')),",
-				"          VigenciaHasta = iif(instr(VigenciaDesde, '/') > 0, toDate (VigenciaHasta, 'dd/MM/yyyy'), toDate (VigenciaHasta, 'yyyy-MM-dd')),",
+				"          VigenciaDesde = iif(     isNull(VigenciaDesde),     toDate(null()),     iif(         instr(VigenciaDesde, '/') > 0,         toDate(VigenciaDesde, 'dd/MM/yyyy'),         iif(             length(VigenciaDesde) == 5,             addDays(toDate('1899-12-30', 'yyyy-MM-dd'), toInteger(VigenciaDesde)),             toDate(VigenciaDesde, 'yyyy-MM-dd')         )     ) ),",
+				"          VigenciaHasta = iif(     isNull(VigenciaHasta),     toDate(null()),     iif(         instr(VigenciaHasta, '/') > 0,         toDate(VigenciaHasta, 'dd/MM/yyyy'),         iif(             length(VigenciaHasta) == 5,             addDays(toDate('1899-12-30', 'yyyy-MM-dd'), toInteger(VigenciaHasta)),             toDate(VigenciaHasta, 'yyyy-MM-dd')         )     ) ),",
 				"          Estado = upper(trim(Estado))) ~> derivedColumn1",
-				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"source1 derive(CodigoRuta = iif(     isNull(CodigoRuta),     '',     CodigoRuta )) ~> derivedColumn2",
+				"derivedColumn1 aggregate(groupBy(RutaHistoricaId),",
+				"     CodigoRuta = first(CodigoRuta),",
+				"          NombreRuta = first(NombreRuta),",
+				"          Origen = first(Origen),",
+				"          Destino = first(Destino),",
+				"          VigenciaDesde = first(VigenciaDesde),",
+				"          VigenciaHasta = first(VigenciaHasta),",
+				"          Estado = first(Estado)) ~> aggregate1",
+				"aggregate1 aggregate(groupBy(RutaHistoricaId,",
+				"          CodigoRuta,",
+				"          NombreRuta,",
+				"          Origen,",
+				"          Destino,",
+				"          VigenciaDesde,",
+				"          VigenciaHasta,",
+				"          Estado),",
+				"     Contador = count()) ~> aggregate2",
+				"aggregate2 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          RutaHistoricaId as string,",

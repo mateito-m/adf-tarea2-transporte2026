@@ -26,10 +26,13 @@
 			],
 			"transformations": [
 				{
-					"name": "split1"
+					"name": "derivedColumn1"
 				},
 				{
-					"name": "derivedColumn1"
+					"name": "derivedColumn2"
+				},
+				{
+					"name": "derivedColumn3"
 				}
 			],
 			"scriptLines": [
@@ -49,18 +52,19 @@
 				"     validateSchema: false,",
 				"     isolationLevel: 'READ_UNCOMMITTED',",
 				"     format: 'table') ~> source1",
-				"source1 split(!isNull(DemandaId) && trim(toString(DemandaId)) != '',",
-				"     disjoint: false) ~> split1@(Valido, Invalido)",
-				"split1@Valido derive(DemandaId = trim(DemandaId),",
-				"          FechaServicio = iif(instr(FechaServicio, '/') > 0, toDate (FechaServicio, 'dd/MM/yyyy'), toDate (FechaServicio, 'yyyy-MM-dd')),",
-				"          RutaHistoricaId = iif(    startsWith(upper(trim(RutaHistoricaId)), 'RUTA '),    concat('RH-', substring(trim(RutaHistoricaId), 6, 20)),    iif(        isNull(RutaHistoricaId) || trim(RutaHistoricaId) == '',        toString(null()),        iif(            startsWith(trim(RutaHistoricaId), 'R-'),            concat('RH-', substring(trim(RutaHistoricaId), 3, 20)),            iif(                length(trim(RutaHistoricaId)) == 2,                concat('RH-', trim(RutaHistoricaId)),                upper(trim(RutaHistoricaId))            )        )    )),",
+				"derivedColumn2 derive(DemandaId = trim(toString(DemandaId)),",
+				"          FechaServicio = iif(    isNull(FechaServicio),    toDate(null()),    iif(        instr(FechaServicio, '/') > 0,        toDate(FechaServicio, 'dd/MM/yyyy'),        iif(            length(FechaServicio) == 5,            addDays(toDate('1899-12-30', 'yyyy-MM-dd'), toInteger(FechaServicio)),            toDate(FechaServicio, 'yyyy-MM-dd')        )    )),",
+				"          RutaHistoricaId = trim(RutaHistoricaId),",
 				"          ParadaHistoricaId = upper(trim(ParadaHistoricaId)),",
 				"          Franja = trim(Franja),",
 				"          ValidacionesTarjeta = toInteger(ValidacionesTarjeta),",
 				"          Descensos = toInteger(Descensos),",
 				"          DemandaNoAtendida = toInteger(DemandaNoAtendida),",
 				"          Metodo = upper(trim(Metodo))) ~> derivedColumn1",
-				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"source1 derive(DemandaId = iif(     isNull(DemandaId) || trim(DemandaId) == '',     concat(         'D-',         toString(FechaServicio, 'yyyyMMdd'),         '-',         RutaHistoricaId,         '-',         ParadaHistoricaId     ),     DemandaId )) ~> derivedColumn2",
+				"derivedColumn1 derive(RutaHistoricaId = iif(    isNull(RutaHistoricaId) || trim(RutaHistoricaId) == '',    toString(null()),    iif(        startsWith(upper(trim(RutaHistoricaId)), 'RUTA '),        iif(            length(trim(substring(trim(RutaHistoricaId), 6, 20))) == 1,            concat('RH-0', trim(substring(trim(RutaHistoricaId), 6, 20))),            concat('RH-', trim(substring(trim(RutaHistoricaId), 6, 20)))        ),        iif(            startsWith(upper(trim(RutaHistoricaId)), 'R-'),            concat('RH-', substring(trim(RutaHistoricaId), 3, 20)),            iif(                startsWith(upper(trim(RutaHistoricaId)), 'RH-'),                upper(trim(RutaHistoricaId)),                iif(                    length(trim(RutaHistoricaId)) == 2,                    concat('RH-', trim(RutaHistoricaId)),                    upper(trim(RutaHistoricaId))                )            )        )    )),",
+				"          ParadaHistoricaId = iif(     ParadaHistoricaId == 'MC-01',     'P220-MC-NEW',     toString(ParadaHistoricaId) )) ~> derivedColumn3",
+				"derivedColumn3 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          DemandaId as string,",
